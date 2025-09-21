@@ -1,2 +1,0 @@
-crear un contenedor temporal con un numbre especifico
-- docker run -it --rm --network nodos_network -e CLIENT_NAME=cliente2 -v ~/Documents/dockers/tallerGrande1/client/:/opt/cliente juancho926/customubuntu:1.1 bash
