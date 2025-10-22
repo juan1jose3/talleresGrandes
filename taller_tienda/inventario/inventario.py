@@ -21,23 +21,38 @@ def cargar_productos(origen=None):
     return Success(productos)
 
 @method
-def actualizar_inventario(carrito):
+def actualizar_inventario(carrito, tipo_operacion="venta"):
     """
-    Actualiza el stock de los productos según la cantidad comprada.
+    Actualiza el stock de los productos según la operación.
+    - tipo_operacion="venta": Resta stock (compra del cliente)
+    - tipo_operacion="compra": Suma stock (compra a proveedores)
     """
-    print("\nActualizando inventario...")
+    print(f"\n{'='*50}")
+    print(f"Actualizando inventario ({tipo_operacion})...")
+    print(f"{'='*50}")
+    
     for item in carrito:
         for p in productos:
             if p["id"] == item["id"]:
-                p["stock"] += item.get("comprar", 0)
-                print(f"- {p['nombre']}: nuevo stock = {p['stock']}")
-
-    # 🔹 Mostrar el JSON completo actualizado al final
+                cantidad = item.get("comprar", 0)
+                stock_anterior = p["stock"]
+                
+                if tipo_operacion == "compra":
+                   
+                    p["stock"] += cantidad
+                    operacion_simbolo = "+"
+                else:
+                   
+                    p["stock"] -= cantidad
+                    operacion_simbolo = "-"
+                
+                print(f"  {operacion_simbolo} {p['nombre']}: {stock_anterior} {operacion_simbolo} {cantidad} = {p['stock']}")
+                break
+    
     print("\nInventario final actualizado:")
-    print(json.dumps(productos, indent=4))
-
+    print(json.dumps(productos, indent=4, ensure_ascii=False))
+    
     return Success({"mensaje": "Inventario actualizado", "productos": productos})
-
 
 if __name__ == "__main__":
     print("Servicio de Inventario corriendo en 172.20.0.3:5001")
