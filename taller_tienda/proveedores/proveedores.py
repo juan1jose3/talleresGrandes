@@ -65,7 +65,7 @@ def enviar_a_comprasventas(productos):
     try:
         response = requests.post(URL_COMPRASVENTAS, json=payload, timeout=5)
         data = response.json()
-        print(f"✓ Respuesta de ComprasVentas: {data}")
+        print(f"Respuesta de ComprasVentas: {data}")
     except Exception as e:
         print(f"Error al enviar productos a ComprasVentas: {e}")
 
@@ -76,7 +76,7 @@ def registrar_compra(productos, origen=None):
     Este método recibe las compras enviadas desde ComprasVentas
     y simplemente las registra en Proveedores.
     """
-    print(f"\n✓ Compra recibida en Proveedores desde '{origen}'")
+    print(f"\nCompra recibida en Proveedores desde '{origen}'")
     print(f"  Productos: {len(productos)} items")
     
     # Mostrar detalles de los productos recibidos

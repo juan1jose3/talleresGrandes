@@ -86,7 +86,7 @@ def notificar_proveedores(compras_realizadas, origen):
     try:
         # CLAVE: timeout bajo y no procesar respuesta detalladamente
         requests.post(URL_PROVEEDORES, json=payload, timeout=1)
-        print("✓ Notificación enviada a Proveedores (sin esperar respuesta)")
+        print("Notificación enviada a Proveedores (sin esperar respuesta)")
     except requests.exceptions.Timeout:
         print("Timeout notificando a Proveedores (normal, ya procesaron)")
     except Exception as e:
@@ -99,7 +99,7 @@ def registrar_compra(productos, origen=None):
     Procesa compras de productos con bajo stock.
     Recibe productos desde Proveedores, crea órdenes de compra y genera facturas.
     """
-    print(f"\n✓ Nueva compra registrada desde {origen}")
+    print(f"\nNueva compra registrada desde {origen}")
     compras_realizadas = []
 
     # Crear órdenes de compra con cantidad fija de 5 unidades
@@ -133,7 +133,7 @@ def registrar_compra(productos, origen=None):
     try:
         response = requests.post(url_contabilidad, json=payload, timeout=5)
         data = response.json()
-        print(f"✓ Respuesta de Contabilidad: {data['result']['mensaje']}")
+        print(f"Respuesta de Contabilidad: {data['result']['mensaje']}")
         
         # Obtener la factura generada
         pedir_recibo()

@@ -5,7 +5,6 @@ Módulo de Controlador de Facturas
 Este módulo actúa como intermediario entre el modelo y la vista,
 manejando la lógica de aplicación y comunicación con otros servicios.
 
-Autor: [Tu Nombre]
 Fecha: 2025-10-21
 """
 

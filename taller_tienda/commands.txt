@@ -1,0 +1,7 @@
+Correr tienda 
+
+curl -X POST http://172.20.0.2:5002 -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"tienda_controller","params":{},"id":1}'
+
+
+correr proveedores
+curl -X POST http://172.20.0.6:5005 \  7 ✘  08:55:43 PM   -H "Content-Type: application/json" \ -d '{"jsonrpc":"2.0","method":"proveedores","params":{},"id":1}'
