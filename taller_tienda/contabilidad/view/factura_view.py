@@ -134,4 +134,4 @@ class FacturaView:
             >>> FacturaView.mostrar_notificacion_inventario("Inventario actualizado")
             Inventario actualizado
         """
-        print(f"✓ {mensaje}")
+        print(f"{mensaje}")
