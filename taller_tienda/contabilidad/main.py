@@ -19,8 +19,9 @@ Puerto: 5004
 Host: 172.20.0.5
 
 
-Fecha: 2025-10-21
-Versión: 1.0.0
+Librerias a instalar:
+    - jsonrpcserver -> pip install jsonrpcserver 
+    - requests -> pip install requests
 """
 
 from jsonrpcserver import method, serve

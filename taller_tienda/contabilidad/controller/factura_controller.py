@@ -118,7 +118,7 @@ class FacturaController:
         Example:
             >>> carrito = [{"id": 1, "nombre": "Silla", "comprar": 2}]
             >>> FacturaController.notificar_inventario(carrito, "venta")
-            ✓ Inventario actualizado
+            Inventario actualizado
         
         Note:
             - Timeout de 5 segundos para la petición
