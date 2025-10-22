@@ -1,5 +1,5 @@
-from jsonrpcserver import method, serve,Success
-
+from jsonrpcserver import method, serve, Success
+import json
 
 productos = [
     {"id": 1, "nombre": "Sofá Seccional", "categoria": "Sala", "precio": 1200.0, "stock": 5},
@@ -17,12 +17,28 @@ productos = [
 @method
 def cargar_productos(origen=None):
     if origen:
-         print(f"Solicitud recibida de {origen}")
+        print(f"Solicitud recibida de {origen}")
     return Success(productos)
+
+@method
+def actualizar_inventario(carrito):
+    """
+    Actualiza el stock de los productos según la cantidad comprada.
+    """
+    print("\nActualizando inventario...")
+    for item in carrito:
+        for p in productos:
+            if p["id"] == item["id"]:
+                p["stock"] += item.get("comprar", 0)
+                print(f"- {p['nombre']}: nuevo stock = {p['stock']}")
+
+    # 🔹 Mostrar el JSON completo actualizado al final
+    print("\nInventario final actualizado:")
+    print(json.dumps(productos, indent=4))
+
+    return Success({"mensaje": "Inventario actualizado", "productos": productos})
 
 
 if __name__ == "__main__":
-      print("Corriendo inventario :) ")
-      serve("172.20.0.3", 5001)
-    
-    
+    print("Servicio de Inventario corriendo en 172.20.0.3:5001")
+    serve("172.20.0.3", 5001)
