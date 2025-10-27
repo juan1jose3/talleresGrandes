@@ -24,7 +24,8 @@ def cargar_productos(productos,origen=None):
      
         print(f"TIENDA: Obteniendo productos de inventario {origen}...")
         #print(json.dumps(productos,indent=4, ensure_ascii=False))
-        for producto in productos:
+      
+        for producto in productos["productos"]:
             print(f"ID: {producto['id']} - Nombre: {producto['nombre']} - Categoría: {producto['categoria']} - Precio: {producto['precio']} - Stock {producto['stock']}")
     else:
         catalogo.append("Vacío")
@@ -43,7 +44,7 @@ def crear_orden():
     while i < cantidad_de_productos:
         compra = int(input("¿Que desea comprar?(Ingrese id): "))
         
-        for item in catalogo:
+        for item in catalogo["productos"]:
             if item["id"] == compra:
                 cantidad = int(input(f"¿Cuantas unidades de {item['nombre']}?: "))
                 

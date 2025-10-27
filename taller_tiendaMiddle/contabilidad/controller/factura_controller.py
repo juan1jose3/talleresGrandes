@@ -28,7 +28,7 @@ class FacturaController:
         URL_INVENTARIO (str): URL del servicio de inventario
     """
     
-    URL_INVENTARIO = "http://192.168.1.2:5001"
+    URL_MIDDLEWARE = "http://192.168.1.10:5010"
     
     @staticmethod
     def generar_factura(carrito: list, origen: str = None) -> Success:
@@ -92,7 +92,7 @@ class FacturaController:
         # Notificar al inventario
         FacturaController.notificar_inventario(carrito, tipo_operacion)
         
-        return Success({"mensaje": "Factura generada", "factura": factura})
+        return Success({"mensaje": "Factura generada"})
     
     @staticmethod
     def notificar_inventario(carrito: list, tipo_operacion: str = "venta") -> None:
@@ -131,7 +131,7 @@ class FacturaController:
         
         payload = {
             "jsonrpc": "2.0",
-            "method": "actualizar_inventario",
+            "method": "recibir_modificacion_inventario",
             "params": {
                 "carrito": carrito,
                 "tipo_operacion": tipo_operacion
@@ -142,7 +142,7 @@ class FacturaController:
         
         try:
             response = requests.post(
-                FacturaController.URL_INVENTARIO,
+                FacturaController.URL_MIDDLEWARE,
                 json=payload,
                 timeout=5
             )

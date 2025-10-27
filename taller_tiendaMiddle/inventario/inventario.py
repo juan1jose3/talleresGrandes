@@ -18,7 +18,7 @@ productos = [
 def cargar_productos(origen=None):
     if origen:
         print(f"Solicitud recibida de {origen}")
-    return Success(productos)
+    return Success({"productos":productos})
 
 @method
 def actualizar_inventario(carrito, tipo_operacion="venta"):

@@ -18,6 +18,7 @@ def middleWareController():
     enviar_productos_tienda(productos)
     enviar_compras_ventas()
     pedir_genrar_factura()
+    #pedir_recibir_factura()
     return Success()
 
 
@@ -48,23 +49,27 @@ def enviar_productos_tienda(productos):
         "jsonrpc": "2.0",
         "method": "cargar_productos",
         "params": {
-                    "origen": origen,
-                    "productos":productos["result"]
-                },
+            "origen": origen,
+            "productos": productos["result"]
+        },
         "id": 1
     }
 
     print("Enviando productos a tienda .....")
 
     try:
-        response = requests.post(URL_TIENDA, json=payload, timeout=5)
+        response = requests.post(URL_TIENDA, json=payload, timeout=None)
+        print("Respuesta HTTP recibida desde tienda")  
+
         message = response.json()
-        print(f"Mensaje desde tienda:{message}")
-        
-        carrito_compras["carrito"] = message["result"]["productos"]
-        return Success(message)
+        print(f"Mensaje desde tienda: {message}") 
+
+        #result = message.get("result", {})
+        carrito_compras["productos"] = message["result"]["productos"]
+        print(f"DEBUG Carrito guardado: {carrito_compras}")
+    
     except Exception as e:
-        return Success({"Error" : e})
+        print(f"ERROR general: {e}")
 
     
 def enviar_compras_ventas():
@@ -73,7 +78,7 @@ def enviar_compras_ventas():
         "method": "registrar_venta",
         "params": {
                     "origen": origen,
-                    "carrito": carrito_compras.get("carrito", [])
+                    "carrito": carrito_compras
                 },
         "id": 1
     }
@@ -87,7 +92,8 @@ def enviar_compras_ventas():
 
 def pedir_genrar_factura():
     
-    carrito = carrito_compras["carrito"]
+    carrito = carrito_compras["productos"]
+    print(carrito)
   
     payload = {
         "jsonrpc": "2.0",
@@ -100,9 +106,35 @@ def pedir_genrar_factura():
     }
 
     response = requests.post(URL_CONTABILIDAD, json=payload, timeout=5)
-    print(f"Mensaje contabilidad: {response.json}")
+    print(f"Mensaje contabilidad: {response.json()} -> Esperando confirmación")
+
+
+@method
+def recibir_modificacion_inventario(carrito, tipo_operacion="venta"):
+    print(carrito)
+    print(tipo_operacion)
+
+    return Success({"message":"Confirmado"})
+
+
+""""
+def pedir_recibir_factura():
     
-    
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "recibir_factura",
+        "params": {
+                    "origen": origen,
+                    
+                },
+        "id": 1
+    }
+    response = requests.post(URL_CONTABILIDAD, json=payload, timeout=5)
+    print(f"Mensaje contabilidad: {response.json()} -> Factura de contabilidad")
+"""
+
+
+
 
     
 
