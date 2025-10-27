@@ -17,6 +17,7 @@ def middleWareController():
     productos = cargar_productos()
     enviar_productos_tienda(productos)
     enviar_compras_ventas()
+    pedir_genrar_factura()
     return Success()
 
 
@@ -59,32 +60,51 @@ def enviar_productos_tienda(productos):
         response = requests.post(URL_TIENDA, json=payload, timeout=5)
         message = response.json()
         print(f"Mensaje desde tienda:{message}")
-        carrito_compras["carrito"] = message
+        
+        carrito_compras["carrito"] = message["result"]["productos"]
         return Success(message)
     except Exception as e:
         return Success({"Error" : e})
 
     
-
-
 def enviar_compras_ventas():
     payload = {
         "jsonrpc": "2.0",
         "method": "registrar_venta",
         "params": {
                     "origen": origen,
-                    "carrito":carrito_compras
+                    "carrito": carrito_compras.get("carrito", [])
                 },
         "id": 1
     }
 
     print("Enviando a comprasVentas")
 
-    response = requests.post(URL_COMPRASVENTAS, json=payload, timeout=None)
+    response = requests.post(URL_COMPRASVENTAS, json=payload, timeout=5)
+    print(f"Mensaje comprasVentas: {response.json()}")
 
 
 
+def pedir_genrar_factura():
+    
+    carrito = carrito_compras["carrito"]
+  
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "generar_factura",
+        "params": {
+                    "origen": origen,
+                    "carrito":carrito
+                },
+        "id": 1
+    }
 
+    response = requests.post(URL_CONTABILIDAD, json=payload, timeout=5)
+    print(f"Mensaje contabilidad: {response.json}")
+    
+    
+
+    
 
 
 

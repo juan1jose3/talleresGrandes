@@ -9,16 +9,21 @@ origenPeticion = "comprasVentas"
 url_tienda = "http://192.168.1.3:5002"
 URL_PROVEEDORES = "http://192.168.1.6:5005"
 
+URL_MIDDLEWARE = "http://192.168.1.10:5010"
+
 @method
 def registrar_venta(carrito, origen=None):
     ventas_registradas.append(carrito)
     print(f"Venta nueva desde: {origen}")
     print(ventas_registradas)
-    print("Enviando a contabilidad")
+
+    return Success({"Message":"carrito recivido"})
+    """
+    
     
     try:
         pedir_generar_recibo(carrito, origen)
-        pedir_recibo()
+        #pedir_recibo()
         #enviar_tienda()
         
     except Exception as e:
@@ -30,26 +35,30 @@ def registrar_venta(carrito, origen=None):
     
     return Success(mensaje)
 
-
+    """
 @method
 def pedir_generar_recibo(carrito, origen):
     payload = {
         "jsonrpc": "2.0",
-        "method": "generar_factura",
+        "method": "mandar_generar_factura",
         "params": {
             "carrito": carrito,
             "origen": origen
         },
         "id": 1
     }
+    response = requests.post(URL_MIDDLEWARE, json=payload, timeout=10)
+    print(f"Estado HTTP: {response.status_code}")
+    print(f"Texto crudo: {response.text}")
     try:
-        response = requests.post(url_contabilidad, json=payload, timeout=5)
         data = response.json()
-        print(f"Respuesta de contabilidad: {data['result']['mensaje']}")
-    except:
-        print("Error")
+        print(f"Respuesta de MiddleWare: {data}")
+        return data
+    except Exception as e:
+        print(f"Error al decodificar respuesta: {e}")
+        print(response.text)
 
-
+"""
 @method
 def pedir_recibo():
     payload = {
@@ -68,12 +77,12 @@ def pedir_recibo():
         
     except Exception as e:
         print("Error")
-
-
+"""
+""""
 def notificar_proveedores(compras_realizadas, origen):
     """
-    Envía la compra registrada a Proveedores de forma asíncrona (fire-and-forget).
-    """
+    #Envía la compra registrada a Proveedores de forma asíncrona (fire-and-forget).
+"""
     payload = {
         "jsonrpc": "2.0",
         "method": "registrar_compra",
@@ -96,9 +105,9 @@ def notificar_proveedores(compras_realizadas, origen):
 @method
 def registrar_compra(productos, origen=None):
     """
-    Procesa compras de productos con bajo stock.
-    Recibe productos desde Proveedores, crea órdenes de compra y genera facturas.
-    """
+    #Procesa compras de productos con bajo stock.
+    #Recibe productos desde Proveedores, crea órdenes de compra y genera facturas.
+"""
     print(f"\nNueva compra registrada desde {origen}")
     compras_realizadas = []
 
@@ -150,7 +159,7 @@ def registrar_compra(productos, origen=None):
     }
 
     return Success(mensaje)
-
+"""
 
 if __name__ == "__main__":
     print("Compras ventas corriendo")

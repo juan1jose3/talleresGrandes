@@ -32,7 +32,7 @@ def cargar_productos(productos,origen=None):
     print()
     carrito = crear_orden()
 
-    return Success(carrito)
+    return Success({"productos":carrito})
 
 
 def crear_orden():    
@@ -59,7 +59,8 @@ def crear_orden():
                 i += 1
                 break
     print(carro_de_compras)
-    return(carro_de_compras)
+    return carro_de_compras
+
     
 
 if __name__ == "__main__":
