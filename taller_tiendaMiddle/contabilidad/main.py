@@ -121,7 +121,7 @@ def recibir_factura(origen=None):
 
 if __name__ == "__main__":
     print("="*60)
-    print("Servicio de Contabilidad corriendo en 172.20.0.5:5004")
+    print("Servicio de Contabilidad corriendo en 192.168.1.5:5004")
     print("="*60)
     print("\nEndpoints disponibles:")
     print("  - generar_factura(carrito, origen)")
@@ -130,4 +130,4 @@ if __name__ == "__main__":
     print("Protocolo: JSON-RPC 2.0")
     print("="*60 + "\n")
     
-    serve("0.0.0.0", 5004)
+    serve("192.168.1.5", 5004)

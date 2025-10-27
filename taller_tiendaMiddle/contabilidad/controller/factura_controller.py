@@ -28,7 +28,7 @@ class FacturaController:
         URL_INVENTARIO (str): URL del servicio de inventario
     """
     
-    URL_INVENTARIO = "http://25.46.206.185:5000"
+    URL_INVENTARIO = "http://192.168.1.2:5001"
     
     @staticmethod
     def generar_factura(carrito: list, origen: str = None) -> Success:
@@ -96,45 +96,6 @@ class FacturaController:
     
     @staticmethod
     def notificar_inventario(carrito: list, tipo_operacion: str = "venta") -> None:
-        """
-        Notifica al servicio de Inventario vía XML-RPC para actualizar el stock.
-        
-        Args:
-            carrito (list): Lista de productos con cantidades
-            tipo_operacion (str, optional): "venta" o "compra"
-        """
-        try:
-            # Crear proxy XML-RPC
-            inventario_proxy = xmlrpc.client.ServerProxy(FacturaController.URL_INVENTARIO)
-
-            # Recorrer carrito y enviar cada producto al inventario
-            for item in carrito:
-                producto_id = item.get("id")
-                cantidad = item.get("comprar", 0)
-
-                # Ajustar cantidad según tipo de operación
-                if tipo_operacion == "venta":
-                    cantidad_cambio = -abs(cantidad)
-                else:
-                    cantidad_cambio = abs(cantidad)
-
-                datos_actualizacion = {
-                    "producto_id": producto_id,
-                    "cantidad_cambio": cantidad_cambio
-                }
-
-                print(f"[FacturaController] Actualizando stock ID {producto_id} ({tipo_operacion})...")
-                resp = inventario_proxy.actualizar_inventario(datos_actualizacion)
-
-                # Mostrar respuesta en consola y en FacturaView
-                print(json.dumps(resp, indent=2))
-                FacturaView.mostrar_notificacion_inventario(
-                    f"Inventario actualizado para producto {producto_id}"
-                )
-
-        except Exception as e:
-            FacturaView.mostrar_error("Error notificando a Inventario", e)
-
 
         # codigo para json
         """
@@ -167,7 +128,7 @@ class FacturaController:
             - Los errores se capturan y muestran pero no detienen la ejecución
         """
 
-        """
+        
         payload = {
             "jsonrpc": "2.0",
             "method": "actualizar_inventario",
@@ -190,7 +151,7 @@ class FacturaController:
         
         except Exception as e:
             FacturaView.mostrar_error("Error notificando a Inventario", e)
-        """
+        
     
     @staticmethod
     def recibir_factura(origen: str = None) -> Success:

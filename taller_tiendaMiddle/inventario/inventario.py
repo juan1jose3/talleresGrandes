@@ -55,5 +55,5 @@ def actualizar_inventario(carrito, tipo_operacion="venta"):
     return Success({"mensaje": "Inventario actualizado", "productos": productos})
 
 if __name__ == "__main__":
-    print("Servicio de Inventario corriendo en 172.20.0.3:5001")
-    serve("172.20.0.3", 5001)
+    print("Servicio de Inventario corriendo en 192.168.1.2:5001")
+    serve("192.168.1.2", 5001)

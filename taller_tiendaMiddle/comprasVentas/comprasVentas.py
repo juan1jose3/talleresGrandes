@@ -4,10 +4,10 @@ import json
 
 ventas_registradas = []
 factura_actual = {}
-url_contabilidad = "http://172.20.0.5:5004"
+url_contabilidad = "http://192.168.1.5:5004"
 origenPeticion = "comprasVentas"
-url_tienda = "http://172.20.0.2:5002"
-URL_PROVEEDORES = "http://172.20.0.6:5005"
+url_tienda = "http://192.168.1.3:5002"
+URL_PROVEEDORES = "http://192.168.1.6:5005"
 
 @method
 def registrar_venta(carrito, origen=None):
@@ -154,4 +154,4 @@ def registrar_compra(productos, origen=None):
 
 if __name__ == "__main__":
     print("Compras ventas corriendo")
-    serve("172.20.0.4", 5003)
+    serve("192.168.1.4", 5003)

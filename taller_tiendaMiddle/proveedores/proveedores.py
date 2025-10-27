@@ -4,8 +4,8 @@ import json
 import sys
 from http.server import HTTPServer
 
-URL_INVENTARIO = "http://172.20.0.3:5001"
-URL_COMPRASVENTAS = "http://172.20.0.4:5003"
+URL_INVENTARIO = "http://192.168.1.2:5001"
+URL_COMPRASVENTAS = "http://192.168.1.4:5003"
 
 @method
 def proveedores():
@@ -76,7 +76,7 @@ def registrar_compra(productos, origen=None):
     Este método recibe las compras enviadas desde ComprasVentas
     y simplemente las registra en Proveedores.
     """
-    print(f"\nCompra recibida en Proveedores desde '{origen}'")
+    print(f"\nCompra recibida y confirmada'")
     print(f"  Productos: {len(productos)} items")
     
     # Mostrar detalles de los productos recibidos
@@ -103,7 +103,7 @@ class SilentHTTPServer(HTTPServer):
 
 if __name__ == "__main__":
     from jsonrpcserver.server import RequestHandler
-    print("Servicio de Proveedores corriendo en 172.20.0.6:5005")
+    print("Servicio de Proveedores corriendo en 192.168.1.6:5005")
  
-    server = SilentHTTPServer(("172.20.0.6", 5005), RequestHandler)
+    server = SilentHTTPServer(("192.168.1.6", 5005), RequestHandler)
     server.serve_forever()
