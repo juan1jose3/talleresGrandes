@@ -62,7 +62,13 @@ def crear_orden():
     print(carro_de_compras)
     return carro_de_compras
 
-    
+@method
+def leer_factura(factura,origen=None):
+    print(factura)
+    print(origen)
+
+    return Success({"mensaje":"factura esta aqui"})
+
 
 if __name__ == "__main__":
     serve("192.168.1.3", 5002)

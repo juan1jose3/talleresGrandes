@@ -21,6 +21,17 @@ curl -X POST http://192.168.1.10:5010 \
 -d '{"jsonrpc":"2.0","method":"middleWareController","params":{},"id":1}'
 
 
+correr middlware comprasProveedores
+curl -X POST http://192.168.1.10:5010   -H "Content-Type: application/json"   -d '{
+    "jsonrpc": "2.0",
+    "method": "middlewareControllerProveedores",
+    "params": {
+      "origen": "proveedores"
+    },
+    "id": 1
+  }'
+
+
 correr pydoc localmente 
 
 -pydoc controller.factura_controller

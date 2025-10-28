@@ -89,69 +89,11 @@ class FacturaController:
         # Determinar tipo de operación (compra/venta)
         tipo_operacion = FacturaModel.determinar_tipo_operacion(origen)
         
-        # Notificar al inventario
-        FacturaController.notificar_inventario(carrito, tipo_operacion)
+        #Notificar al inventario
+        #FacturaController.notificar_inventario(carrito, tipo_operacion)
         
         return Success({"mensaje": "Factura generada"})
     
-    @staticmethod
-    def notificar_inventario(carrito: list, tipo_operacion: str = "venta") -> None:
-
-        # codigo para json
-        """
-        Notifica al servicio de Inventario para actualizar el stock.
-        
-        Este método envía una petición JSON-RPC al microservicio de Inventario
-        para que actualice el stock de productos según el tipo de operación.
-        
-        Args:
-            carrito (list): Lista de productos con cantidades
-            tipo_operacion (str, optional): Tipo de operación:
-                - "venta": Resta stock (venta a cliente)
-                - "compra": Suma stock (compra a proveedor)
-                Default: "venta"
-        
-        Returns:
-            None
-        
-        Side Effects:
-            - Envía petición HTTP POST a URL_INVENTARIO
-            - Imprime resultado en consola vía FacturaView
-        
-        Example:
-            >>> carrito = [{"id": 1, "nombre": "Silla", "comprar": 2}]
-            >>> FacturaController.notificar_inventario(carrito, "venta")
-            Inventario actualizado
-        
-        Note:
-            - Timeout de 5 segundos para la petición
-            - Los errores se capturan y muestran pero no detienen la ejecución
-        """
-
-        
-        payload = {
-            "jsonrpc": "2.0",
-            "method": "recibir_modificacion_inventario",
-            "params": {
-                "carrito": carrito,
-                "tipo_operacion": tipo_operacion
-            },
-            "id": 1
-        }
-        
-        
-        try:
-            response = requests.post(
-                FacturaController.URL_MIDDLEWARE,
-                json=payload,
-                timeout=5
-            )
-            data = response.json()
-            FacturaView.mostrar_notificacion_inventario(data['result']['mensaje'])
-        
-        except Exception as e:
-            FacturaView.mostrar_error("Error notificando a Inventario", e)
-        
     
     @staticmethod
     def recibir_factura(origen: str = None) -> Success:

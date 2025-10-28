@@ -20,6 +20,50 @@ def cargar_productos(origen=None):
         print(f"Solicitud recibida de {origen}")
     return Success({"productos":productos})
 
+
+
+@method
+def validar_stock(carrito):
+    """
+    Valida si hay suficiente stock para procesar la venta.
+    
+    Returns:
+        Success con disponible=True/False y mensaje
+    """
+    print(f"\n{'='*50}")
+    print("Validando disponibilidad de stock...")
+    print(f"{'='*50}")
+    
+    productos_sin_stock = []
+    
+    for item in carrito:
+        for p in productos:
+            if p["id"] == item["id"]:
+                cantidad_solicitada = item.get("comprar", 0)
+                
+                if p["stock"] < cantidad_solicitada:
+                    productos_sin_stock.append({
+                        "nombre": p["nombre"],
+                        "stock_actual": p["stock"],
+                        "cantidad_solicitada": cantidad_solicitada
+                    })
+                    print(f"{p['nombre']}: Stock insuficiente (disponible: {p['stock']}, solicitado: {cantidad_solicitada})")
+                else:
+                    print(f"{p['nombre']}: Stock suficiente ({p['stock']} >= {cantidad_solicitada})")
+                break
+    
+    if productos_sin_stock:
+        return Success({
+            "disponible": False,
+            "mensaje": "Stock insuficiente para algunos productos",
+            "productos_sin_stock": productos_sin_stock
+        })
+    else:
+        return Success({
+            "disponible": True,
+            "mensaje": "Stock disponible para todos los productos"
+        })
+
 @method
 def actualizar_inventario(carrito, tipo_operacion="venta"):
     """

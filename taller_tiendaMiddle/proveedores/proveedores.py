@@ -4,89 +4,67 @@ import json
 import sys
 from http.server import HTTPServer
 
-URL_INVENTARIO = "http://192.168.1.2:5001"
-URL_COMPRASVENTAS = "http://192.168.1.4:5003"
+URL_MIDDLEWARE = "http://192.168.1.10:5010"
 
 @method
 def proveedores():
-    print("Mandando petición para saber el stock de productos ....")
-    productos = cargar_requerimientos_productos()
+    """
+    Inicia el proceso de reabastecimiento.
+    Delega toda la lógica al Middleware.
+    """
+    print("\n" + "="*60)
+    print("PROVEEDORES: Solicitando reabastecimiento al Middleware")
+    print("="*60)
     
-    if productos:
-        print("\nEnviando productos con bajo stock a ComprasVentas...")
-        enviar_a_comprasventas(productos)
-    else:
-        print("No hay productos con bajo stock.")
-    
-    return Success({"productos_bajo_stock": productos})
-
-
-def cargar_requerimientos_productos():
     payload = {
         "jsonrpc": "2.0",
-        "method": "cargar_productos",
-        "params": {"origen": "atencionProveedores"},
+        "method": "middlewareControllerProveedores",
+        "params": {"origen": "proveedores"},
         "id": 1
     }
+    
     try:
-        response = requests.post(URL_INVENTARIO, json=payload, timeout=15)
-        print("Respuesta de Inventario:")
-        data = response.json()
-        print("Productos con poco stock:")
-        productos_lista = []
+        # El Middleware maneja todo el proceso
+        response = requests.post(URL_MIDDLEWARE, json=payload, timeout=30)
+        resultado = response.json()
         
-        for producto in data["result"]:
-            if producto["stock"] <= 5:
-                print(f"  ID: {producto['id']} - Nombre: {producto['nombre']} - Categoría: {producto['categoria']} - Precio: {producto['precio']} - Stock {producto['stock']}")
-                productos_lista.append({
-                    "id": producto["id"],
-                    "nombre": producto["nombre"],
-                    "categoria": producto["categoria"],
-                    "precio": producto["precio"],
-                    "stock": producto["stock"]
-                })
+        mensaje = resultado.get('result', {}).get('mensaje', 'Proceso completado')
+        productos_comprados = resultado.get('result', {}).get('productos_comprados', [])
         
-        return productos_lista
+        print(f"\n{mensaje}")
+        if productos_comprados:
+            print(f"{len(productos_comprados)} productos reabastecidos")
+        
+        return Success(resultado.get('result', {}))
+        
+    except requests.exceptions.Timeout:
+        print("Timeout esperando respuesta del Middleware")
+        return Success({"mensaje": "Timeout en proceso"})
     except Exception as e:
-        print(f"Error al cargar productos: {e}")
-        return []
-
-
-def enviar_a_comprasventas(productos):
-    """
-    Envía los productos con bajo stock al microservicio de ComprasVentas.
-    """
-    payload = {
-        "jsonrpc": "2.0",
-        "method": "registrar_compra",
-        "params": {"productos": productos, "origen": "proveedores"},
-        "id": 1
-    }
-    try:
-        response = requests.post(URL_COMPRASVENTAS, json=payload, timeout=5)
-        data = response.json()
-        print(f"Respuesta de ComprasVentas: {data}")
-    except Exception as e:
-        print(f"Error al enviar productos a ComprasVentas: {e}")
+        print(f"Error: {e}")
+        return Success({"mensaje": f"Error: {e}"})
 
 
 @method
-def registrar_compra(productos, origen=None):
+def confirmar_recepcion_compra(productos, origen=None):
     """
-    Este método recibe las compras enviadas desde ComprasVentas
-    y simplemente las registra en Proveedores.
+    Recibe confirmación de que la compra fue procesada.
     """
-    print(f"\nCompra recibida y confirmada'")
-    print(f"  Productos: {len(productos)} items")
+    print("\n" + "="*60)
+    print("CONFIRMACIÓN DE COMPRA RECIBIDA")
+    print("="*60)
+    print(f"Productos recibidos: {len(productos)} items")
     
-    # Mostrar detalles de los productos recibidos
+    total_unidades = 0
     for p in productos:
-        if 'comprar' in p:
-            print(f"  - {p['nombre']}: {p['comprar']} unidades a comprar")
-        else:
-            print(f"  - {p['nombre']}: stock actual {p.get('stock', 'N/A')}")
+        cantidad = p.get('comprar', 0)
+        total_unidades += cantidad
+        print(f"{p['nombre']}: +{cantidad} unidades")
     
-    return Success({"mensaje": "Compra recibida por Proveedores"})
+    print(f"\nTotal agregado: {total_unidades} unidades")
+    print("="*60 + "\n")
+    
+    return Success({"mensaje": "Compra confirmada por Proveedores"})
 
 
 class SilentHTTPServer(HTTPServer):
@@ -94,16 +72,20 @@ class SilentHTTPServer(HTTPServer):
     def handle_error(self, request, client_address):
         exc_type, exc_value, exc_traceback = sys.exc_info()
         if exc_type == BrokenPipeError:
-            # Ignorar BrokenPipe - cliente cerró conexión antes de recibir respuesta
-            print(f"Cliente {client_address[0]} cerró conexión (timeout esperado)")
+            print(f"Cliente {client_address[0]} cerró conexión")
         else:
-            # Para otros errores, mostrar traceback completo
             super().handle_error(request, client_address)
 
 
 if __name__ == "__main__":
     from jsonrpcserver.server import RequestHandler
+    print("="*60)
     print("Servicio de Proveedores corriendo en 192.168.1.6:5005")
- 
+    print("="*60)
+    print("\nEndpoints:")
+    print("  - proveedores() → Inicia reabastecimiento")
+    print("  - confirmar_recepcion_compra(productos, origen)")
+    print("="*60 + "\n")
+    
     server = SilentHTTPServer(("192.168.1.6", 5005), RequestHandler)
     server.serve_forever()
