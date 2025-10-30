@@ -7,6 +7,7 @@ from jsonrpcserver import method, serve, Success
 @method
 def ordenar_transporte(factura,origen):
     print(factura)
+    print(origen)
 
     return Success({"mensaje":"Transporte ordenado, tu pedido llegará en 3 días hábiles"})
 

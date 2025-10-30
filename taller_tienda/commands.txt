@@ -22,6 +22,8 @@ correr pydoc en un puerto
 
 escuchar en todoas las redes(lo que debo hacer)
 
--pydoc -b -p 8080 -n 0.0.0.0
+pydoc -b -p 8080 -n 0.0.0.0
 
+Importante: Recuarda hacer cd a taller_tienda y desde ahí ejecutas el comando dentro de contabilidad
+ejemplo: juancho@fedora:~/Documents/talleresGrandes/taller_tienda/contabilidad$ pydoc -b -p 8080 -n 0.0.0.0
 jsonrpcserver y requests

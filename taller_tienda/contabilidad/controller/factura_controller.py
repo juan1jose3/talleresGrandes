@@ -10,10 +10,7 @@ manejando la lógica de aplicación y comunicación con otros servicios.
 IMPORTANTE - Comunicación con Inventario
 ----------------------------------------
 Este módulo está configurado para usar XML-RPC para comunicarse con el servicio
-de Inventario. Si el servicio de Inventario está usando JSON-RPC en su lugar,
-descomente la sección de código JSON-RPC al final del método notificar_inventario()
-y comente la sección XML-RPC actual, esto se debe a que en la integración inventario utiliza
-xmlRpc y para que funciones correctamente tuve que añadirlo.
+de Inventario.
 """
 import xmlrpc.client
 import requests

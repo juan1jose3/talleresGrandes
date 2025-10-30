@@ -23,6 +23,7 @@ comandos utiles docker:
   (se cambia el nombre, la ip y el volumen, se usa la misma red)
 
   - Correr contenedor: docker exec -it transporte bash
+  - Eliminar un contenedor: docker rm -f
 
 
 correr middleWare para ventas
@@ -43,15 +44,14 @@ curl -X POST http://192.168.1.10:5010   -H "Content-Type: application/json"   -d
   }'
 
 
-correr pydoc localmente 
+correr la documentación usando pydoc:
 
--pydoc controller.factura_controller
+  pdoc --http 0.0.0.0:8080 \
+     taller_tiendaMiddle.comprasVentas \
+     taller_tiendaMiddle.inventario \
+     taller_tiendaMiddle.middleWare \
+     taller_tiendaMiddle.proveedores \
+     taller_tiendaMiddle.tienda
 
-correr pydoc en un puerto
--pydoc -p 8080
 
-escuchar en todoas las redes(lo que debo hacer)
-
--pydoc -b -p 8080 -n 0.0.0.0
-
-jsonrpcserver y requests
+  se debe de copiar todo esto

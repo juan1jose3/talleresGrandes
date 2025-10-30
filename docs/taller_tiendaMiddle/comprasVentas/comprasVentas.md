@@ -1,4 +1,5 @@
-"""
+Module taller_tiendaMiddle.comprasVentas.comprasVentas
+======================================================
 Microservicio de Compras y Ventas - Sistema Distribuido de Gestión de Muebles
 ==============================================================================
 
@@ -132,183 +133,12 @@ See Also
 inventario : Servicio de gestión de stock
 tienda : Servicio de interfaz con clientes
 middleware : Orquestador del sistema distribuido
-"""
 
-from jsonrpcserver import method, serve, Success
-import requests
-import json
+Functions
+---------
 
-# Registro de ventas realizadas
-ventas_registradas = []
-
-# Registro de compras a proveedores
-compras_registradas = []
-
-# Factura en proceso actual
-factura_actual = {}
-
-# URL del middleware para comunicación entre servicios
-URL_MIDDLEWARE = "http://192.168.1.10:5010"
-
-
-@method
-def registrar_venta(carrito, origen=None):
-    """
-    Registra una venta realizada a un cliente en el sistema.
-    
-    Este método almacena el carrito de compras en el registro de ventas para
-    mantener el histórico de transacciones. Se invoca típicamente después de
-    validar el stock y antes de actualizar el inventario.
-    
-    Parameters
-    ----------
-    carrito : list of dict
-        Lista de productos vendidos. Cada producto debe contener:
-        
-        {
-            "id": int,              # ID del producto
-            "nombre": str,          # Nombre del producto
-            "categoria": str,       # Categoría del producto
-            "precio": float,        # Precio unitario
-            "stock": int,           # Stock disponible (informativo)
-            "comprar": int          # Cantidad vendida
-        }
-        
-        Ejemplo::
-        
-            [
-                {
-                    "id": 1,
-                    "nombre": "Sofá Seccional",
-                    "categoria": "Sala",
-                    "precio": 1200.0,
-                    "stock": 5,
-                    "comprar": 2
-                },
-                {
-                    "id": 3,
-                    "nombre": "Silla de Oficina",
-                    "categoria": "Oficina",
-                    "precio": 150.0,
-                    "stock": 20,
-                    "comprar": 5
-                }
-            ]
-    
-    origen : str, optional
-        Identificador del servicio o usuario que origina la venta.
-        Ejemplos: "Tienda", "Sistema Web", "App Móvil", "Usuario123"
-        Se utiliza para trazabilidad y auditoría.
-        Default: None
-    
-    Returns
-    -------
-    Success
-        Objeto Success con confirmación de registro:
-        
-        {
-            "Message": "carrito recivido"
-        }
-        
-        Nota: El mensaje contiene un error tipográfico intencional ("recivido")
-        que se mantiene para compatibilidad con el sistema existente.
-    
-    Examples
-    --------
-    Solicitud JSON-RPC::
-    
-        {
-            "jsonrpc": "2.0",
-            "method": "registrar_venta",
-            "params": {
-                "carrito": [
-                    {
-                        "id": 1,
-                        "nombre": "Sofá Seccional",
-                        "categoria": "Sala",
-                        "precio": 1200.0,
-                        "stock": 5,
-                        "comprar": 2
-                    },
-                    {
-                        "id": 6,
-                        "nombre": "Mesa de Centro",
-                        "categoria": "Sala",
-                        "precio": 250.0,
-                        "stock": 12,
-                        "comprar": 1
-                    }
-                ],
-                "origen": "Tienda"
-            },
-            "id": 1
-        }
-    
-    Salida por consola::
-    
-        Venta nueva desde: Tienda
-        [
-            [
-                {
-                    'id': 1,
-                    'nombre': 'Sofá Seccional',
-                    'categoria': 'Sala',
-                    'precio': 1200.0,
-                    'stock': 5,
-                    'comprar': 2
-                },
-                {
-                    'id': 6,
-                    'nombre': 'Mesa de Centro',
-                    'categoria': 'Sala',
-                    'precio': 250.0,
-                    'stock': 12,
-                    'comprar': 1
-                }
-            ]
-        ]
-    
-    Respuesta JSON-RPC::
-    
-        {
-            "jsonrpc": "2.0",
-            "result": {
-                "Message": "carrito recivido"
-            },
-            "id": 1
-        }
-    
-    Notes
-    -----
-    - Agrega el carrito completo a la lista global 'ventas_registradas'
-    - Imprime información de la venta en consola para logging
-    - No valida la estructura del carrito recibido
-    - No calcula totales ni genera factura (eso se hace en otros servicios)
-    - El registro es inmediato y no reversible
-    - Mantiene todas las ventas en memoria sin límite de tamaño
-    
-    Warnings
-    --------
-    - Los datos no persisten después de reiniciar el servicio
-    - No hay validación de duplicados (la misma venta puede registrarse múltiples veces)
-    - No hay límite de memoria para ventas_registradas
-    - Si el origen es None, se imprime "None" en consola
-    
-    See Also
-    --------
-    registrar_compra : Registra compras a proveedores
-    ventas_registradas : Variable global que almacena todas las ventas
-    """
-    ventas_registradas.append(carrito)
-    print(f"Venta nueva desde: {origen}")
-    print(ventas_registradas)
-    return Success({"Message": "carrito recivido"})
-
-
-@method
-def registrar_compra(productos, origen=None):
-    """
-    Registra una compra realizada a proveedores para reabastecer inventario.
+`registrar_compra(productos, origen=None)`
+:   Registra una compra realizada a proveedores para reabastecer inventario.
     
     Este método almacena las compras a proveedores en el sistema, incluyendo
     los productos adquiridos, el origen de la solicitud y un timestamp. Proporciona
@@ -463,37 +293,149 @@ def registrar_compra(productos, origen=None):
     registrar_venta : Registra ventas a clientes
     compras_registradas : Variable global que almacena todas las compras
     actualizar_inventario : Método en servicio de inventario que suma stock
-    """
-    # Crear objeto de compra con estructura completa
-    compra = {
-        "productos": productos,
-        "origen": origen,
-        "timestamp": json.dumps({"fecha": "now"})  # Timestamp estático
-    }
-    
-    # Agregar a registro de compras
-    compras_registradas.append(compra)
-    
-    # Imprimir información de la compra
-    print("COMPRA REGISTRADA")
-    print(f"Origen: {origen}")
-    print(f"Productos a comprar: {len(productos)}")
-    print()
-    
-    # Calcular y mostrar detalles de cada producto
-    total_unidades = 0
-    for p in productos:
-        cantidad = p.get('comprar', 0)
-        total_unidades += cantidad
-        print(f"  - {p['nombre']}: {cantidad} unidades (${p['precio']} c/u)")
-    
-    # Mostrar totales
-    print(f"\nTotal unidades: {total_unidades}")
-    print(f"Total de compras registradas: {len(compras_registradas)}")
-    
-    return Success({"mensaje": "Compra registrada exitosamente"})
 
-
-if __name__ == "__main__":
-    print("Compras ventas corriendo")
-    serve("192.168.1.4", 5003)
+`registrar_venta(carrito, origen=None)`
+:   Registra una venta realizada a un cliente en el sistema.
+    
+    Este método almacena el carrito de compras en el registro de ventas para
+    mantener el histórico de transacciones. Se invoca típicamente después de
+    validar el stock y antes de actualizar el inventario.
+    
+    Parameters
+    ----------
+    carrito : list of dict
+        Lista de productos vendidos. Cada producto debe contener:
+        
+        {
+            "id": int,              # ID del producto
+            "nombre": str,          # Nombre del producto
+            "categoria": str,       # Categoría del producto
+            "precio": float,        # Precio unitario
+            "stock": int,           # Stock disponible (informativo)
+            "comprar": int          # Cantidad vendida
+        }
+        
+        Ejemplo::
+        
+            [
+                {
+                    "id": 1,
+                    "nombre": "Sofá Seccional",
+                    "categoria": "Sala",
+                    "precio": 1200.0,
+                    "stock": 5,
+                    "comprar": 2
+                },
+                {
+                    "id": 3,
+                    "nombre": "Silla de Oficina",
+                    "categoria": "Oficina",
+                    "precio": 150.0,
+                    "stock": 20,
+                    "comprar": 5
+                }
+            ]
+    
+    origen : str, optional
+        Identificador del servicio o usuario que origina la venta.
+        Ejemplos: "Tienda", "Sistema Web", "App Móvil", "Usuario123"
+        Se utiliza para trazabilidad y auditoría.
+        Default: None
+    
+    Returns
+    -------
+    Success
+        Objeto Success con confirmación de registro:
+        
+        {
+            "Message": "carrito recivido"
+        }
+        
+        Nota: El mensaje contiene un error tipográfico intencional ("recivido")
+        que se mantiene para compatibilidad con el sistema existente.
+    
+    Examples
+    --------
+    Solicitud JSON-RPC::
+    
+        {
+            "jsonrpc": "2.0",
+            "method": "registrar_venta",
+            "params": {
+                "carrito": [
+                    {
+                        "id": 1,
+                        "nombre": "Sofá Seccional",
+                        "categoria": "Sala",
+                        "precio": 1200.0,
+                        "stock": 5,
+                        "comprar": 2
+                    },
+                    {
+                        "id": 6,
+                        "nombre": "Mesa de Centro",
+                        "categoria": "Sala",
+                        "precio": 250.0,
+                        "stock": 12,
+                        "comprar": 1
+                    }
+                ],
+                "origen": "Tienda"
+            },
+            "id": 1
+        }
+    
+    Salida por consola::
+    
+        Venta nueva desde: Tienda
+        [
+            [
+                {
+                    'id': 1,
+                    'nombre': 'Sofá Seccional',
+                    'categoria': 'Sala',
+                    'precio': 1200.0,
+                    'stock': 5,
+                    'comprar': 2
+                },
+                {
+                    'id': 6,
+                    'nombre': 'Mesa de Centro',
+                    'categoria': 'Sala',
+                    'precio': 250.0,
+                    'stock': 12,
+                    'comprar': 1
+                }
+            ]
+        ]
+    
+    Respuesta JSON-RPC::
+    
+        {
+            "jsonrpc": "2.0",
+            "result": {
+                "Message": "carrito recivido"
+            },
+            "id": 1
+        }
+    
+    Notes
+    -----
+    - Agrega el carrito completo a la lista global 'ventas_registradas'
+    - Imprime información de la venta en consola para logging
+    - No valida la estructura del carrito recibido
+    - No calcula totales ni genera factura (eso se hace en otros servicios)
+    - El registro es inmediato y no reversible
+    - Mantiene todas las ventas en memoria sin límite de tamaño
+    
+    Warnings
+    --------
+    - Los datos no persisten después de reiniciar el servicio
+    - No hay validación de duplicados (la misma venta puede registrarse múltiples veces)
+    - No hay límite de memoria para ventas_registradas
+    - Si el origen es None, se imprime "None" en consola
+    
+    See Also
+    --------
+    registrar_compra : Registra compras a proveedores
+    ventas_registradas : Variable global que almacena todas las ventas
