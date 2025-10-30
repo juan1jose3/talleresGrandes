@@ -6,11 +6,11 @@ URL_MIDDLEWARE = "http://192.168.1.10:5010"
 catalogo = []
 @method
 def tienda_controller():
-    cargar_productos()
+    ordenar()
     return Success()
 
 @method
-def cargar_productos(productos,origen=None):
+def ordenar(productos,origen=None):
     global catalogo
     payload = {
         "jsonrpc": "2.0",
@@ -63,9 +63,10 @@ def crear_orden():
     return carro_de_compras
 
 @method
-def leer_factura(factura,origen=None):
+def leer_factura(factura,origen=None,transporte=None):
     print(factura)
     print(origen)
+    print(transporte)
 
     return Success({"mensaje":"factura esta aqui"})
 

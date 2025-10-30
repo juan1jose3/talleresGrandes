@@ -5,7 +5,15 @@ Módulo de Controlador de Facturas
 Este módulo actúa como intermediario entre el modelo y la vista,
 manejando la lógica de aplicación y comunicación con otros servicios.
 
-Fecha: 2025-10-21
+
+
+IMPORTANTE - Comunicación con Inventario
+----------------------------------------
+Este módulo está configurado para usar XML-RPC para comunicarse con el servicio
+de Inventario. Si el servicio de Inventario está usando JSON-RPC en su lugar,
+descomente la sección de código JSON-RPC al final del método notificar_inventario()
+y comente la sección XML-RPC actual, esto se debe a que en la integración inventario utiliza
+xmlRpc y para que funciones correctamente tuve que añadirlo.
 """
 import xmlrpc.client
 import requests
@@ -26,9 +34,12 @@ class FacturaController:
     
     Attributes:
         URL_INVENTARIO (str): URL del servicio de inventario
+
+    También es muy importante aclarar que hay que cambiar URL_INVENTARIO a la ip que vaya a usar dicho componente,
+    La presente ip muestra un ejemplo con una red local docker.
     """
     
-    URL_INVENTARIO = "http://25.46.206.185:5000"
+    URL_INVENTARIO = "http://10.8.4.196:5000"
     
     @staticmethod
     def generar_factura(carrito: list, origen: str = None) -> Success:
@@ -99,9 +110,78 @@ class FacturaController:
         """
         Notifica al servicio de Inventario vía XML-RPC para actualizar el stock.
         
+        IMPORTANTE - Protocolo de Comunicación:
+        ----------------------------------------
+        Este método usa XML-RPC por defecto. Si el servicio de Inventario usa JSON-RPC,
+        debe comentar la implementación XML-RPC y descomentar el código JSON-RPC al final.
+        
+        Descripción:
+        -----------
+        Conecta con el servicio de Inventario mediante XML-RPC y actualiza
+        el stock de cada producto en el carrito. Ajusta las cantidades según el tipo
+        de operación (suma para compras, resta para ventas).
+        
         Args:
-            carrito (list): Lista de productos con cantidades
-            tipo_operacion (str, optional): "venta" o "compra"
+            carrito (list): Lista de productos con cantidades. Cada item debe contener:
+                - id (int): Identificador del producto
+                - comprar (int): Cantidad del producto
+            tipo_operacion (str, optional): Tipo de operación:
+                - "venta": Resta stock (venta a cliente)
+                - "compra": Suma stock (compra a proveedor)
+                Default: "venta"
+        
+        Returns:
+            None
+        
+        Side Effects:
+            - Crea conexión XML-RPC con URL_INVENTARIO
+            - Llama al método remoto 'actualizar_inventario' por cada producto
+            - Imprime resultado en consola para cada actualización
+            - Muestra notificaciones vía FacturaView
+        
+        Raises:
+            Exception: Si hay error de conexión o comunicación con el servicio
+        
+        Example - Uso con XML-RPC (implementación actual):
+            >>> carrito = [
+            ...     {"id": 1, "nombre": "Silla", "comprar": 2},
+            ...     {"id": 5, "nombre": "Mesa", "comprar": 1}
+            ... ]
+            >>> FacturaController.notificar_inventario(carrito, "venta")
+            [FacturaController] Actualizando stock ID 1 (venta)...
+            Inventario actualizado para producto 1
+            [FacturaController] Actualizando stock ID 5 (venta)...
+            Inventario actualizado para producto 5
+        
+        Technical Details - XML-RPC:
+            - Usa xmlrpc.client.ServerProxy para crear el cliente XML-RPC
+            - Envía diccionario con estructura:
+                {
+                    "producto_id": int,
+                    "cantidad_cambio": int (negativo para ventas, positivo para compras)
+                }
+            - Procesa productos secuencialmente (no en lote)
+            - Timeout por defecto de xmlrpc.client (sin límite explícito)
+        
+        Technical Details - JSON-RPC (implementación alternativa comentada):
+            - Envía payload JSON-RPC 2.0 con estructura:
+                {
+                    "jsonrpc": "2.0",
+                    "method": "actualizar_inventario",
+                    "params": {
+                        "carrito": list,
+                        "tipo_operacion": str
+                    },
+                    "id": 1
+                }
+            - Timeout de 5 segundos para la petición HTTP
+            - Envía todos los productos en una sola petición (modo lote)
+        
+        Note:
+            - Los errores se capturan y muestran pero no detienen la ejecución
+            - Ver código comentado al final del método para implementación JSON-RPC
+            - La elección entre XML-RPC y JSON-RPC debe coincidir con lo que este manejando el
+            inventario. 
         """
         try:
             # Crear proxy XML-RPC
@@ -127,7 +207,7 @@ class FacturaController:
                 resp = inventario_proxy.actualizar_inventario(datos_actualizacion)
 
                 # Mostrar respuesta en consola y en FacturaView
-                print(json.dumps(resp, indent=2))
+                print(json.dumps(resp, indent=2,ensure_ascii=False))
                 FacturaView.mostrar_notificacion_inventario(
                     f"Inventario actualizado para producto {producto_id}"
                 )
@@ -136,9 +216,17 @@ class FacturaController:
             FacturaView.mostrar_error("Error notificando a Inventario", e)
 
 
-        # codigo para json
+        
+        # CÓDIGO ALTERNATIVO PARA JSON-RPC
+    
+        # Si el servicio de Inventario está usando JSON-RPC en lugar de XML-RPC,
+        # comente todo el código XML-RPC arriba y descomente el siguiente bloque:
+    
         """
-        Notifica al servicio de Inventario para actualizar el stock.
+        Notifica al servicio de Inventario vía JSON-RPC para actualizar el stock.
+        
+        IMPORTANTE: Este código está comentado. Solo descomentar si el servicio de 
+        Inventario usa JSON-RPC en lugar de XML-RPC.
         
         Este método envía una petición JSON-RPC al microservicio de Inventario
         para que actualice el stock de productos según el tipo de operación.
@@ -162,11 +250,23 @@ class FacturaController:
             >>> FacturaController.notificar_inventario(carrito, "venta")
             Inventario actualizado
         
+        Technical Details:
+            - Envía payload JSON-RPC 2.0 con estructura:
+                {
+                    "jsonrpc": "2.0",
+                    "method": "actualizar_inventario",
+                    "params": {
+                        "carrito": list,
+                        "tipo_operacion": str
+                    },
+                    "id": 1
+                }
+            - Timeout de 5 segundos para la petición HTTP
+        
         Note:
-            - Timeout de 5 segundos para la petición
             - Los errores se capturan y muestran pero no detienen la ejecución
+            - Requiere que el endpoint acepte JSON-RPC 2.0
         """
-
         """
         payload = {
             "jsonrpc": "2.0",

@@ -8,6 +8,7 @@ URL_TIENDA = "http://192.168.1.3:5002"
 URL_COMPRASVENTAS = "http://192.168.1.4:5003"
 URL_CONTABILIDAD = "http://192.168.1.5:5004"
 URL_PROVEEDORES = "http://192.168.1.6:5005"
+URL_TRANSPORTE = "http://192.168.1.7:5006"
 
 carrito_compras = {}
 
@@ -42,7 +43,11 @@ def cargar_productos():
     print("Solicitando productos a inventario")
     response = requests.post(URL_INVENTARIO, json=payload, timeout=None)
     productos = response.json()
+    print("="*60)
     print("Productos recibidos")
+    for producto in productos["result"]["productos"]:
+        print(f"ID: {producto['id']} - Nombre: {producto['nombre']} - Categoría: {producto['categoria']} - Precio: {producto['precio']} - Stock {producto['stock']}")
+    print("="*60)
     return productos
 
 
@@ -50,7 +55,7 @@ def enviar_productos_tienda(productos):
     """Envía productos a la tienda para que el usuario seleccione"""
     payload = {
         "jsonrpc": "2.0",
-        "method": "cargar_productos",
+        "method": "ordenar",
         "params": {
             "origen": origen,
             "productos": productos["result"]
@@ -62,7 +67,12 @@ def enviar_productos_tienda(productos):
         response = requests.post(URL_TIENDA, json=payload, timeout=None)
         message = response.json()
         carrito_compras["productos"] = message["result"]["productos"]
+        print("INFORMACIÓN CARRITO")
+        print("="*60)
         print(f"Carrito guardado: {len(carrito_compras['productos'])} productos")
+        for i in carrito_compras["productos"]:
+            print(f"ID: {i['id']} - Nombre: {i['nombre']} - Categoría: {i['categoria']} - Precio: {i['precio']} - Stock {i['stock']}")
+        print("="*60)
     except Exception as e:
         print(f"Error en tienda: {e}")
 
@@ -80,7 +90,8 @@ def enviar_compras_ventas():
     }
     print("Enviando a comprasVentas")
     response = requests.post(URL_COMPRASVENTAS, json=payload, timeout=5)
-    print(f"Mensaje comprasVentas: {response.json()}")
+    respuestaComprasVentas = response.json()
+    print(f"Mensaje comprasVentas: {respuestaComprasVentas["result"]["Mensaje"]}")
 
 
 def validar_stock_disponible():
@@ -199,6 +210,8 @@ def pedir_recibir_factura():
         factura = resultado.get('result', {}).get('factura', None)
         
         if factura:
+            for items in factura:
+                print(f"{items["fecha"]} -- {items["subtotal"]} -- {items["iva"]} -- {items["impuesto_extra"]} -- {items["total"]}")
             print(f"Factura recibida:")
             print(f"Fecha: {factura.get('fecha')}")
             print(f"Total: ${factura.get('total', 0):.2f}")
@@ -211,19 +224,39 @@ def pedir_recibir_factura():
 
 
 def enviar_factura_tienda(factura):
+    transporte = pedir_transporte(factura)
     payload = {
         "jsonrpc": "2.0",
         "method": "leer_factura",
         "params": {
                     "factura":factura,
                     "origen": origen,
+                    "transporte": transporte
                    },
         "id": 1
     }
 
     response = requests.post(URL_TIENDA,json=payload,timeout=5)
     print(f"Respuesta de tienda: {response.json()}")
+    
 
+
+def pedir_transporte(factura):
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "ordenar_transporte",
+        "params": {
+                    "factura":factura,
+                    "origen": origen,
+                   },
+        "id": 1
+    }
+    response = requests.post(URL_TRANSPORTE,json=payload,timeout=5)
+    print(f"Respuesta de transporte: {response.json()}")
+    return response.json()
+      
+
+    
 
      
 

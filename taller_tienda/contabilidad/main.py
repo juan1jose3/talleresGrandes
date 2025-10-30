@@ -121,7 +121,7 @@ def recibir_factura(origen=None):
 
 if __name__ == "__main__":
     print("="*60)
-    print("Servicio de Contabilidad corriendo en 172.20.0.5:5004")
+    print("Servicio de Contabilidad corriendo en 10.8.4.213:5004")
     print("="*60)
     print("\nEndpoints disponibles:")
     print("  - generar_factura(carrito, origen)")
