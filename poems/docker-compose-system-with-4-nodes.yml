@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  node1:
+    build: .
+    container_name: node1
+    environment:
+      - NODE_ID=node1
+      - PHRASE_NUMBER=1
+      - PHRASE_CONTENT=Primera línea del nuevo poema
+      - NEIGHBORS=node4:5000,node2:5000
+      - PORT=5000
+    ports:
+      - "5001:5000"
+    networks:
+      - phrase_network
+    restart: unless-stopped
+
+  node2:
+    build: .
+    container_name: node2
+    environment:
+      - NODE_ID=node2
+      - PHRASE_NUMBER=2
+      - PHRASE_CONTENT=Segunda línea del nuevo poema
+      - NEIGHBORS=node1:5000,node3:5000
+      - PORT=5000
+    ports:
+      - "5002:5000"
+    networks:
+      - phrase_network
+    restart: unless-stopped
+
+  node3:
+    build: .
+    container_name: node3
+    environment:
+      - NODE_ID=node3
+      - PHRASE_NUMBER=3
+      - PHRASE_CONTENT=Tercera línea del nuevo poema
+      - NEIGHBORS=node2:5000,node4:5000
+      - PORT=5000
+    ports:
+      - "5003:5000"
+    networks:
+      - phrase_network
+    restart: unless-stopped
+
+  node4:
+    build: .
+    container_name: node4
+    environment:
+      - NODE_ID=node4
+      - PHRASE_NUMBER=4
+      - PHRASE_CONTENT=Cuarta línea del nuevo poema
+      - NEIGHBORS=node3:5000,node1:5000
+      - PORT=5000
+    ports:
+      - "5004:5000"
+    networks:
+      - phrase_network
+    restart: unless-stopped
+
+networks:
+  phrase_network:
+    driver: bridge
+

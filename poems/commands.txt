@@ -1,0 +1,56 @@
+Testing each node
+
+# Node 1
+curl http://localhost:5001/complete | python3 -c "import sys, json; print(json.load(sys.stdin)['complete_text'])"
+
+# Node 2
+curl http://localhost:5002/complete | python3 -c "import sys, json; print(json.load(sys.stdin)['complete_text'])"
+
+# Node 3
+curl http://localhost:5003/complete | python3 -c "import sys, json; print(json.load(sys.stdin)['complete_text'])"
+
+# Node 4
+curl http://localhost:5004/complete| python3 -c "import sys, json; print(json.load(sys.stdin)['complete_text'])"
+
+# Node 5
+curl http://localhost:5005/complete| python3 -c "import sys, json; print(json.load(sys.stdin)['complete_text'])"
+
+# Node 6
+curl http://localhost:5006/complete
+
+# Node 7
+curl http://localhost:5007/complete
+
+# Node 8
+curl http://localhost:5008/complete
+
+
+
+
+Docker commands
+# 1. Detener y eliminar todos los contenedores
+docker-compose down -v
+
+# 2. Eliminar contenedores huérfanos manualmente
+docker container prune -f
+
+# 3. Eliminar las imágenes viejas
+docker rmi poems_node1 poems_node2 poems_node3 poems_node4 poems_node5 poems_node6 poems_node7 poems_node8 2>/dev/null || true
+
+# 4. Ahora reconstruir desde cero
+docker-compose build --no-cache
+
+# 5. Levantar los contenedores
+docker-compose up
+docker-compose --build
+
+Apagar y activar servicios customizados
+
+#4Nodos
+activar: docker-compose -f docker-compose-system-with-4-nodes.yml up --build -d
+
+desactivar: docker-compose -f docker-compose-system-with-4-nodes.yml down
+
+#10Nodos
+activar: docker-compose -f docker-compose-10nodes.yml up --build
+desactivar: docker-compose -f docker-compose-10nodes.yml down
